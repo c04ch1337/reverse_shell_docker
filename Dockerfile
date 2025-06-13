@@ -1,7 +1,7 @@
 FROM ubuntu:latest
 
 RUN apt-get update && apt-get install -y \
-    netcat \
+    netcat-traditional \
     ncat \
     curl \
     wget \
@@ -11,7 +11,6 @@ RUN apt-get update && apt-get install -y \
     iputils-ping \
     nginx \
     openssl \
-    metasploit-framework \
     && apt-get clean
 
 RUN useradd -m ssh_admin && echo "ssh_admin:ssh_admin" | chpasswd
