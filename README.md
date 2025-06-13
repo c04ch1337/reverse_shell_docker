@@ -33,6 +33,7 @@ docker build -t reverse-shell .
 ## 🧪 Run the Container
 
 ```bash
+  -p 8080:8080 \
 docker run -it --rm \
   -v $(pwd)/logs:/app/logs \
   -v $(pwd)/www:/usr/share/nginx/html \
@@ -171,3 +172,30 @@ Built-in HTTPS support using NGINX and a self-signed cert:
 > Always get written permission before testing any system you do not own.
 
 ---
+
+## 🌐 Optional HTTP Access (Port 8080)
+
+Although HTTPS (443) is preferred, this toolkit also exposes port **8080** for plain HTTP delivery if needed.
+
+This is helpful for:
+- Legacy tools
+- Targets without trusted cert support
+- Quick testing without TLS overhead
+
+**Usage:**
+```bash
+http://<your_ip>:8080/SigmaPotato.exe
+http://<your_ip>:8080/auto_sigma_https.bat
+```
+
+Mount the port:
+```bash
+-p 8080:8080
+```
+
+To start a plain HTTP server manually inside the container:
+```bash
+python3 -m http.server 8080 --directory /usr/share/nginx/html
+```
+
+**Reminder:** Plain HTTP is unencrypted and should only be used in controlled environments.
